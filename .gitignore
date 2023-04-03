@@ -1,0 +1,17 @@
+node_modules/
+temp*/
+package-lock.json
+howto.md
+.gitattributes
+src/notes.md
+logs/
+test.js
+test.bat
+src/Events/resume.js
+src/Commands/fun/
+.vscode/
+.VSCodeCounter/
+config/*.json
+config/Playlists/*.json
+!*.example
+*.old

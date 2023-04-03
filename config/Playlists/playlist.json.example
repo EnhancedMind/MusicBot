@@ -1,0 +1,15 @@
+{
+    "items": [
+        {
+            "disabled": false,
+            "path": "youtube keywords || videoURL || paylistURL",
+            "requesterId": "discord user id" || null
+        },
+        {
+            "disabled": false,
+            "path": "youtube keywords || videoURL || paylistURL",
+            "requesterId": "discord user id" || null
+        }
+    ],
+    "shuffle": true
+}

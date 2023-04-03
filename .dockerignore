@@ -1,0 +1,16 @@
+.vscode/
+logs/
+node_modules/
+config/
+.gitattributes
+.gitnore
+howto.md
+changelog.md
+LICENSE
+README.md
+run.bat
+run.sh
+test.bat
+test.js
+src/notes.md
+*.old
