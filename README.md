@@ -48,7 +48,12 @@ Copy the `config.json.example` in the config folder and rename it to `config.jso
         "updateInterval": 7500,
         "loudnessNormalization": false,
         "selfDeaf": false,
-        "debug": false
+        "debug": false,
+        "library": {
+            "player": "play-dl",
+            "downloader": "ytdl-core",
+            "info": "ytdl-core"
+        }
     },
     "logs": {
         "resetLogOnStart": false,
@@ -100,6 +105,9 @@ Copy the `config.json.example` in the config folder and rename it to `config.jso
 - `player.loudnessNormalization`: whether to normalize the loudness of the songs (not recommended, currently working only for downloaded songs)  
 - `player.selfDeaf`: whether to deafen the bot or not  
 - `player.debug`: whether to show audioplayer debug messages or not  
+- `player.library.player`: the library that will be used for streaming music (music player) - play-dl / ytdl-core  
+- `player.library.downloader`: the library that will be used for downloading music (nightcore and slowed cmds) - play-dl / ytdl-core  
+- `player.library.info`: the library that will be used for getting song info - ytdl-core only for now  
 <br>
 
 - `logs.resetLogOnStart`: whether to clear the session log on start or continue at the end of the file  ´

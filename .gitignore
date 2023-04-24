@@ -14,4 +14,4 @@ src/Commands/fun/
 config/*.json
 config/Playlists/*.json
 !*.example
-*.old
+*.old*

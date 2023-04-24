@@ -4,7 +4,7 @@ const { ReactionCollector } = require('discord.js');
 const ytdl = require('ytdl-core');
 const ytpl = require('ytpl');
 const ytsr = require('yt-search');
-const { existsSync } = require('fs')
+const { existsSync, readdirSync } = require('fs')
 
 const { consoleLog } = require('../../Data/Log');
 const timeConverter = require('../../Data/time');
@@ -179,16 +179,23 @@ module.exports = new Command({
             });
         }
         
+        playlistBreak: 
         if ( [ 'playlist', 'pl' ].includes(args[0].toLowerCase()) ) {
-            const playlistFile = `${__dirname}/../../../config/${playlistFolderPath}/${args[1]}.json`;
-            if (!existsSync(playlistFile)) return message.channel.send(`${error} I could not find \`${args[1]}.json\` in the Playlists folder.`);
-            const playlist = require(playlistFile);
-            response = await message.channel.send(`${loading} Loading playlist **${args[1]}**... (${playlist.items.length} items)`);
-            for (const element of playlist.items) {
-                if (element.disabled) continue;  //breaks current loop iteration (cycle) and continues with next one
-                if ( await finder([element.path], element.requesterId, true) === 1) return;  //=== for exact match
+            const files = readdirSync(`${__dirname}/../../../config/${playlistFolderPath}`);
+            for (const file of files) {
+                if (file.startsWith(args[1]) && file.endsWith('.json')) {
+                    const playlistFile = `${__dirname}/../../../config/${playlistFolderPath}/${file}`;
+                    const playlist = require(playlistFile);
+                    response = await message.channel.send(`${loading} Loading playlist **${file.slice(0, -5)}**... (${playlist.items.length} items)`);
+                    for (const element of playlist.items) {
+                        if (element.disabled) continue;  //breaks current loop iteration (cycle) and continues with next one
+                        if ( await finder([element.path], element.requesterId, true) === 1) return;  //=== for exact match
+                    }
+                    shuffle = playlist.shuffle;
+                    break playlistBreak;  //breaks back to the break label
+                }
             }
-            shuffle = playlist.shuffle;
+            return message.channel.send(`${error} I could not find \`${args[1]}*.json\` in the Playlists folder.`);
         }
         else {
             response = await message.channel.send(`${loading} Loading \`[${args.join(' ')}]\``);

@@ -12,7 +12,7 @@ const { homepage } = require('../../../package.json');
 module.exports = new Command({
 	name: 'queue',
 	aliases: [ 'q' ],
-	syntax: 'queue [page]',
+	syntax: 'queue <page>',
 	description: 'Shows the current queue.',
 	async run(message, args, client) {
 		const guildQueue = queue.get(message.guild.id);
@@ -27,9 +27,9 @@ module.exports = new Command({
 		if (guildQueue.songs.length == 1) {
 			const response = await message.channel.send(`${warning} There is only the current song in the queue.`);
 			await new Promise(resolve => setTimeout(resolve, 3500));
-			if (response.deletable) response.delete();
 			const npcmd = client.commands.get('nowplaying');
 			if (!npcmd) return consoleLog('[WARN] Can\'t find the nowplaying command.');
+			if (response.deletable) response.delete();
 			return npcmd.run(message, [], client);
 		}
 

@@ -7,7 +7,7 @@ const { emoji: { success, warning }, response: { missingArguments, invalidNumber
 module.exports = new Command({
 	name: 'remove',
 	aliases: [ 'rm', 'delete', 'del' ],
-	syntax: 'remove <number>',
+	syntax: 'remove <position>',
 	description: 'Removes a song from the queue.',
 	async run(message, args, client) {
 		const guildQueue = queue.get(message.guild.id);

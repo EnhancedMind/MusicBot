@@ -1,3 +1,22 @@
+# Version 0.4.0
+The commands requiring elevated permissions can now be used by bot owner even without the elevated permissions  
+Command category folders now start with number and they are sorted by that number  
+The prune commands now say Deleting messages instead of Clearing messages  
+Updated ytdl-core to version 4.11.4  
+The debug command can now send both logs and config files  
+Added the option to use play-dl instead of ytdl-core for player and downloader (nightcore and slowed cmds), info is ytdl-core only for now  
+Changed the required permission to manage channels for music commands that require elevated permissions  
+Added the descriptions for nightcore and slowed commands  
+The nightcore and slowed commands and their associated downloader now listen for stream errors and handle them  
+The nightcore and slowed commands now don't crash when invalid number is passed as argument  
+Fixed the ```<arg>``` and [arg] syntax in the help menu  
+Added verification to the nowplaying command when it creates embed description so line.repeat can't be less than 0  
+Playling local playlist now doesn't require typing the full name, the start of the name is enough  
+The playlists command now responds that no playlists were found  
+Changed the format of the playlists command response to be consistent with other commands  
+If aloneTimeout is set to less than 0, the bot will not leave the voice channel when left alone  
+Updated readme  
+
 # Version 0.3.0
 If temp folder doesn't exist, it will be created now  
 Added persistent to the volume command syntax displayed in help menu  
@@ -48,7 +67,7 @@ The audio volume normalization is now configurable in the config file
 Added grab and yoink aliases to the save command  
 Nowplaying command no longer uses the skip command to skip songs due to issues with checking the voice state and changing the skipping mechanism  
 The nowplaying command now requires the user to be in the same voice channel as the bot  
-The nowplaying command can now skip songs and send 'Player error: aborted' message so you can skip and nobody will know ;)  
+The nowplaying command can now skip songs and send 'Player error: aborted' message so you can skip and nobody will know ;) (by reacting with ⏩)  
 Added the bassboost command  
 Added the seek command  
 Added the skip command with abort message  

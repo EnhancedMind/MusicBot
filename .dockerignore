@@ -14,3 +14,4 @@ test.bat
 test.js
 src/notes.md
 *.old
+*.removedfromdocker

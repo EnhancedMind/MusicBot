@@ -3,9 +3,10 @@ const { spawn } = require('child_process');
 const { existsSync, rmSync, createReadStream } = require('fs');
 const { createAudioResource, createAudioPlayer, joinVoiceChannel } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
+const playdl = require('play-dl');
 const ffmpeg = require('ffmpeg-static');
 const { consoleLog } = require('./Log');
-const { emoji: { error }, player: { stayInChannel, aloneTimeUntilStop, updateInterval, loudnessNormalization, selfDeaf, debug } } = require('../../config/config.json');
+const { emoji: { error }, player: { stayInChannel, aloneTimeUntilStop, updateInterval, loudnessNormalization, selfDeaf, debug, library } } = require('../../config/config.json');
 
 
 const queue = {
@@ -111,7 +112,8 @@ const queue = {
             return;
         }
 
-        if (!options.localPath) this.queues[guild].resource.ytdl = ytdl(this.queues[guild].songs[0].url, { quality: 'highestaudio', highWaterMark: 1 << 26 }); // highWaterMark: 1048576 * 32  fixes stream stopping (for a while) // also posible 1 << 25
+        if (!options.localPath && library.player == 'ytdl-core') this.queues[guild].resource.ytdl = ytdl(this.queues[guild].songs[0].url, { quality: 'highestaudio', highWaterMark: 1 << 25 }); // highWaterMark: 1048576 * 32  fixes stream stopping (for a while) // also posible 1 << 25
+        else if (!options.localPath && library.player == 'play-dl') this.queues[guild].resource.ytdl = (await playdl.stream(this.queues[guild].songs[0].url, { quality: 2, discordPlayerCompatibility: true })).stream; //discordPlayerCompatibility for ffmpeg compatibility
         else this.queues[guild].resource.ytdl = createReadStream(options.localPath);
         this.queues[guild].resource.ytdl.on('error', err => this.queues[guild].player.emit('error', err, null, true) );
 
@@ -151,6 +153,7 @@ const queue = {
         this.queues[guild].resource.resource.volume.setVolume( this.queues[guild].resource.volume );
 
         
+        //updater can't be moved to constructor because it is cleared on queue end, but the bot doesn't disconnect so constructor is not called again
         if (!this.queues[guild].updater.active && updateInterval > 0) {
             this.queues[guild].updater.interval = setInterval(() => {
                 if (this.queues[guild] && this.queues[guild].resource.resource)
@@ -233,6 +236,7 @@ const queue = {
     },
     timeout: (guild, clear = false) => {
         if (clear) return clearTimeout(this.queues[guild].aloneTimeout);
+        if (aloneTimeUntilStop <= 0) return;
         this.queues[guild].aloneTimeout = setTimeout(() => {
             if (this.queues[guild]) {
                 this.queues[guild].connection.destroy();

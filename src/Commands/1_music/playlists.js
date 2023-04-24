@@ -1,7 +1,7 @@
 const Command = require('../../Structures/Command');
 
 const { readdirSync } = require('fs');
-const { bot: { prefix }, emoji: { success }, player: { playlistFolderPath } } = require('../../../config/config.json');
+const { bot: { prefix }, emoji: { success, warning }, player: { playlistFolderPath } } = require('../../../config/config.json');
 
 
 module.exports = new Command({
@@ -16,6 +16,8 @@ module.exports = new Command({
 			if (file.endsWith('.json')) playlists.push(file.replace('.json', ''));
 		});
 
-		message.channel.send(`${success} Available playlists: **${playlists.length}**\n\`${playlists.join('` `')}\`\nType \`${prefix}play playlist <name>\` to play a playlist.`);
+		if (!playlists.length) return message.channel.send(`${warning} No playlists found.`);
+
+		message.channel.send(`${success} Available playlists: **${playlists.length}**\n**${playlists.join('**, **')}**\nType \`${prefix}play playlist <name>\` to play a playlist.`);
 	}
 });

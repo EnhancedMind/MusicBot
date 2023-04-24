@@ -102,7 +102,7 @@ module.exports = new Command({
                 })
                 .setTitle(song.title)
                 .setURL(song.url)
-                .setDescription(`${guildQueue.player.state.status == 'playing' ? ':arrow_forward:' : ':pause_button:'} ${line.repeat(progress)}:radio_button:${line.repeat(14 - progress)} \`[${timeConverter(duration)}/${song.length}]\` :loud_sound:`)
+                .setDescription(`${guildQueue.player.state.status == 'playing' ? ':arrow_forward:' : ':pause_button:'} ${line.repeat(progress)}:radio_button:${ (14 - progress) >= 0 ? line.repeat(14 - progress) : 0} \`[${timeConverter(duration)}/${song.length}]\` :loud_sound:`)
                 .setFooter({ text: `Source: ${song.source}`})
             
             if (response.editable) {

@@ -2,14 +2,15 @@ const Command = require('../../Structures/Command');
 
 const queue = require('../../Data/queue');
 const downloader = require('../../Data/downloader');
-const { emoji: { success, warning }, response: { wrongChannel, noMusic } } = require('../../../config/config.json');
+const { consoleLog } = require('../../Data/Log');
+const { emoji: { success, warning }, response: { wrongChannel, noMusic, invalidNumber } } = require('../../../config/config.json');
 
 
 module.exports = new Command({
 	name: 'nightcore',
 	aliases: [ 'nc' ],
 	syntax: 'nightcore <speed>',
-	description: '',
+	description: 'Plays the current song in nightcore mode from the current time. Speed is optional and defaults to 1.2x.',
 	async run(message, args, client) {
 		const guildQueue = queue.get(message.guild.id);
         if (!guildQueue) return message.channel.send(`${warning} ${noMusic}`);
@@ -24,15 +25,21 @@ module.exports = new Command({
 		}
 
 		if (args[0] && isNaN(args[0])) return message.channel.send(`${warning} ${invalidNumber}`);
-		if (args[0] < 0.5 || args[0] > 2) return message.channel.send(`${warning} ${invalidNumber}`);
+		if (args[0] < 0.5 || args[0] > 2) return message.channel.send(`${warning} ${invalidNumber} (0.5 - 2)`);
 
 		const response = await message.channel.send(`${success} Downloading track for nightcore...`);
 
-		const path = await downloader(guildQueue.songs[0].url, message.guild.id);
+		downloader(guildQueue.songs[0].url, message.guild.id)
+			.then(path => {
+				queue.unpipe(message.guild.id);
+				queue.player(message.guild.id, { inherit: true, localPath: path, speed: args[0] ? Number(args[0]) : 1.2 });
 
-        queue.unpipe(message.guild.id);
-        queue.player(message.guild.id, { inherit: true, localPath: path, speed: args[0] ? Number(args[0]) : 1.2 });
+				response.edit(`${success} Downloaded track for nightcore... Playing now!`);
+			})
+			.catch(err => {
+				consoleLog('[ERROR] Nightcore command failed to download track.', err);
 
-		response.edit(`${success} Downloaded track for nightcore... Playing now!`);
+				response.edit(`${warning} Failed to download track for nightcore. (${err.message})`);
+			});
 	}
 });

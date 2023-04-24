@@ -13,8 +13,6 @@ module.exports = new Command({
 		const guildQueue = queue.get(message.guild.id);
         if (guildQueue) return message.channel.send(`${warning} I'm already in a voice channel.`);
 
-        //if (( !message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id ) && !message.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return message.channel.send(`${warning} ${wrongChannel}`);
-
 		queue.construct(message, []);
 		message.channel.send(`${success} I'm now in your voice channel.`);       
 	}

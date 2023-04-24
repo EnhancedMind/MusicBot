@@ -15,15 +15,15 @@ module.exports = new Command({
 
         if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
 
-		if (!args[0] && guildQueue.repeat || args[0].toLowerCase() == 'off') {
+		if (!args[0] && guildQueue.repeat || args[0] && args[0].toLowerCase() == 'off') {
 			queue.repeat(message.guild.id, false);
 			return message.channel.send(`${success} Repeating is now disabled.`);
 		}
-		if (!args[0] || args[0].toLowerCase() == 'all') {
+		else if (!args[0] || args[0] && args[0].toLowerCase() == 'all') {
 			queue.repeat(message.guild.id, 'all');
 			return message.channel.send(`${success} The whole queue is now repeating!`);
 		}
-		if (args[0].toLowerCase() == 'single') {
+		else if (args[0] && args[0].toLowerCase() == 'single') {
 			queue.repeat(message.guild.id, 'single');
 			return message.channel.send(`${success} The current song is now repeating!`);
 		}
