@@ -1,8 +1,7 @@
 const Command = require('../../Structures/Command');
 
-const { MessageEmbed, ReactionCollector } = require('discord.js');
+const { EmbedBuilder, ReactionCollector } = require('discord.js');
 const timeConverter = require('../../Data/time');
-const { consoleLog } = require('../../Data/Log');
 const queue = require('../../Data/queue');
 const { bot: { ownerID, prefix }, emoji: { success, warning, error }, response: { wrongChannel, noMusic }, player: { updateInterval } } = require('../../../config/config.json');
 const { homepage } = require('../../../package.json');
@@ -25,7 +24,7 @@ module.exports = new Command({
 
         const { requester, requester2 } = guildQueue.songs[0];
 
-        let embed = new MessageEmbed()
+        let embed = new EmbedBuilder()
             .setColor(0x3399FF)
             .setAuthor({
                 name: `${requester.tag}${requester2 && requester.id != requester2.id ? ` - ${requester2.tag}` : ''}`,
@@ -89,11 +88,11 @@ module.exports = new Command({
 
         });
 
-        guildQueue.updater.emitter.on('update', (song, duration) => {
+        guildQueue.updater.emitter.on('update', async (song, duration) => {
             if (args[0] && args[0].toLowerCase() == 'debug' && message.author.id == ownerID) console.log('npupdate', song, duration);
             track = song;
             const progress = Math.round( duration / song.seconds * 14)
-            embed = new MessageEmbed()
+            embed = new EmbedBuilder()
                 .setColor(0x3399FF)
                 .setAuthor({
                     name: `${song.requester.tag}${song.requester2 && song.requester.id != song.requester2.id ? ` - ${song.requester2.tag}` : ''}`,
@@ -105,38 +104,32 @@ module.exports = new Command({
                 .setDescription(`${guildQueue.player.state.status == 'playing' ? ':arrow_forward:' : ':pause_button:'} ${line.repeat(progress)}:radio_button:${ (14 - progress) >= 0 ? line.repeat(14 - progress) : 0} \`[${timeConverter(duration)}/${song.length}]\` :loud_sound:`)
                 .setFooter({ text: `Source: ${song.source}`})
             
-            if (response.editable) {
-                try {
-                    response.edit({ content: `${success} **Now Playing...**`, embeds: [embed] });
-                }
-                catch (err) {
-                    consoleLog('[WARN] Nowplaying response edit error', err);
-                }
-            }
-            else collector.stop();
+            if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} **Now Playing...**`, embeds: [embed] });
+            else {
+                collector.stop();
+                guildQueue.updater.emitter.emit('end');
+            } 
         });
 
-        guildQueue.updater.emitter.on('end', () => {
-            embed = new MessageEmbed()
+        guildQueue.updater.emitter.on('end', async () => {
+            embed = new EmbedBuilder()
                 .setColor(0x3399FF)
                 .setAuthor(null)
                 .setTitle('No music playing')
                 .setURL(null)
-                .setDescription(`:stop_button: ${line.repeat(15)} :loud_sound:`)
+                .setDescription(`:stop_button: ${line.repeat(15)} \`[terminated]\` :loud_sound:`)
                 .setFooter(null)
-            if (response.editable) {
-                try {
-                    response.edit({ content: `${success} **Now Playing...**`, embeds: [embed] });
-                }
-                finally {}
-            } 
+
+            if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} **Now Playing...**`, embeds: [embed] });
+            
             collector.stop();
             guildQueue.updater.emitter.removeAllListeners('update');
             guildQueue.updater.emitter.removeAllListeners('end');
         });
 
-        collector.on('end', async () => {
-            if (response.deletable) response.reactions.removeAll();
+        collector.on('end', async (_, reason) => {
+			if (reason.endsWith('Delete')) return;
+			response.reactions.removeAll();
         });
 	}
 });

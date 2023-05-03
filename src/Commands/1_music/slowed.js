@@ -29,16 +29,16 @@ module.exports = new Command({
 		const response = await message.channel.send(`${success} Downloading track to be slowed...`);
 
 		downloader(guildQueue.songs[0].url, message.guild.id)
-			.then(path => {
+			.then(async path => {
 				queue.unpipe(message.guild.id);
 				queue.player(message.guild.id, { inherit: true, localPath: path, speed: args[0] ? Number(args[0]) : 1.2 });
 
-				response.edit(`${success} Downloaded track for nightcore... Playing now!`);
+				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Downloaded track for nightcore... Playing now!`);
 			})
-			.catch(err => {
+			.catch(async err => {
 				consoleLog('[ERROR] Nightcore command failed to download track.', err);
 
-				response.edit(`${warning} Failed to download track for nightcore. (${err.message})`);
+				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${warning} Failed to download track for nightcore. (${err.message})`);
 			});
 	}
 });

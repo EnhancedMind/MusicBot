@@ -4,7 +4,7 @@ const { ReactionCollector } = require('discord.js');
 const ytdl = require('ytdl-core');
 const ytpl = require('ytpl');
 const ytsr = require('yt-search');
-const { existsSync, readdirSync } = require('fs')
+const { readdirSync } = require('fs')
 
 const { consoleLog } = require('../../Data/Log');
 const timeConverter = require('../../Data/time');
@@ -54,7 +54,7 @@ module.exports = new Command({
                         return;
                     }
                     resolve(true);
-                    response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) to the queue\n${info} This track has a playlist attached. Select ${emojiList[0]} to load playlist.`);
+                    if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) to the queue\n${info} This track has a playlist attached. Select ${emojiList[0]} to load playlist.`);
         
         
                     const react = async () => { 
@@ -89,8 +89,9 @@ module.exports = new Command({
                         }
                     });
         
-                    collector.on('end', () => {
-                        if (response.deletable) response.reactions.removeAll();
+                    collector.on('end', async (_, reason) => {
+                        if (reason.endsWith('Delete')) return;
+                        response.reactions.removeAll();
                     });
         
                 }
@@ -170,9 +171,9 @@ module.exports = new Command({
                         });
                         resolve(result.videoDetails.title);
                     })
-                    .catch(err => {
+                    .catch(async err => {
                         consoleLog('[WARN] YTDL rejection', err);
-                        response.edit(`${error} Error finding video: **${err.message}**.`);
+                        if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${error} Error finding video: **${err.message}**.`);
                         resolve(1);
                         return;
                     });
@@ -207,8 +208,8 @@ module.exports = new Command({
             if (shuffle) queue.shuffle(message.guild.id, 0);
 
             queue.player(message.guild.id);
-            if (songs.length == 1 && !dontEdit) response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) to begin playing`);
-            else if (response.editable && !dontEdit) response.edit(`${success} Added ${shuffle ? 'and shuffled ' : ''}**${songs.length}** tracks!`);
+            if (songs.length == 1 && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) to begin playing`);
+            else if (response.editable && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added ${shuffle ? 'and shuffled ' : ''}**${songs.length}** tracks!`);
         }
         else {
             if (position) { // position can only be 'top', 't' or 'now', 'n'
@@ -223,8 +224,8 @@ module.exports = new Command({
                 });
                 if (shuffle) queue.shuffle(message.guild.id, guildQueue.songs.length);
             }
-            if (songs.length == 1 && !dontEdit) response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) ${[ 'now', 'n' ].includes(position) ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `);
-            else if (response.editable && !dontEdit) response.edit(`${success} Added ${shuffle ? 'and shuffled ' : ''}**${songs.length}** tracks!`);
+            if (songs.length == 1 && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) ${[ 'now', 'n' ].includes(position) ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `);
+            else if (response.editable && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added ${shuffle ? 'and shuffled ' : ''}**${songs.length}** tracks!`);
             
             if (guildQueue.player.state.status == 'idle') {
                 await new Promise(resolve => setTimeout(resolve, 100));

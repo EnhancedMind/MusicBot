@@ -1,10 +1,10 @@
-const { ReactionCollector, Message, MessageEmbed } = require("discord.js");
+const { ReactionCollector, Message, EmbedBuilder } = require("discord.js");
 
-
+// based on npm package saanuregh/discord.js-pagination which is outdated
     /**
      * 
      * @param {Message} msg (Discord.js message)
-     * @param {MessageEmbed} pages (array of Discord.js MessageEmbeds)
+     * @param {EmbedBuilder} pages (array of Discord.js EmbedBuilders)
      * @param {String} messageContent (content of the message)
      * @param {Number} page (current page)
      * @param {Array} emojiList (defaults to [ '◀️', '▶️', '⏹️' ] )
@@ -20,11 +20,15 @@ const paginator = async (msg, pages, messageContent = null, page = 0, emojiList 
     if (page > pages.length - 1) page = pages.length - 1;
 
     const curPage = await msg.channel.send({ content: messageContent, embeds: [pages[page].setFooter({ text: `Page ${page + 1} / ${pages.length}` })] });
+    if (pages.length == 1) return;
 
     let allEmoji = false;
     const react = async () => { 
         for (const emoji of emojiList) {
-            curPage.react(emoji); 
+            try {
+                curPage.react(emoji);
+            }
+            finally {}             
             await new Promise(resolve => setTimeout(resolve, 750));
         } 
         allEmoji = true;
@@ -36,7 +40,7 @@ const paginator = async (msg, pages, messageContent = null, page = 0, emojiList 
     const collector = new ReactionCollector( curPage, { filter, time: timeout } );
 
 
-    collector.on('collect', (reaction, user) => {
+    collector.on('collect', async (reaction, user) => {
         if (reaction.count < 2) return;
 
         reaction.users.remove(user);
@@ -56,14 +60,15 @@ const paginator = async (msg, pages, messageContent = null, page = 0, emojiList 
                 collector.stop();
                 break;
 		}
-        curPage.edit({ content: messageContent, embeds: [pages[page].setFooter({ text: `Page ${page + 1} / ${pages.length}` })] });
         collector.resetTimer();
+        if ( (await curPage.channel.messages.fetch({ limit: 1, cache: false, around: curPage.id })).has(curPage.id) ) curPage.edit({ content: messageContent, embeds: [pages[page].setFooter({ text: `Page ${page + 1} / ${pages.length}` })] });
     });
 
-    collector.on('end', async () => {
+    collector.on('end', async (_, reason) => {
+        if (reason.endsWith('Delete')) return;
         //wait for allEMoji to be true
 		while (!allEmoji) await new Promise(resolve => setTimeout(resolve, 100));
-        if (curPage.deletable) curPage.reactions.removeAll();
+        curPage.reactions.removeAll();
     });
 }
 

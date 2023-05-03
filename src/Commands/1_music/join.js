@@ -1,8 +1,7 @@
 const Command = require('../../Structures/Command');
 
-const { Permissions } = require('discord.js');
 const queue = require('../../Data/queue');
-const { emoji: { success, warning }, response: { wrongChannel, noMusic } } = require('../../../config/config.json');
+const { emoji: { success, warning } } = require('../../../config/config.json');
 
 
 module.exports = new Command({

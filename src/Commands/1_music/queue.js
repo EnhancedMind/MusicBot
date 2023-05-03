@@ -1,6 +1,6 @@
 const Command = require('../../Structures/Command');
 
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const paginator = require('../../Structures/Paginator');
 const timeConverter = require('../../Data/time');
 const { consoleLog } = require('../../Data/Log');
@@ -29,7 +29,7 @@ module.exports = new Command({
 			await new Promise(resolve => setTimeout(resolve, 3500));
 			const npcmd = client.commands.get('nowplaying');
 			if (!npcmd) return consoleLog('[WARN] Can\'t find the nowplaying command.');
-			if (response.deletable) response.delete();
+			if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.delete();
 			return npcmd.run(message, [], client);
 		}
 
@@ -40,14 +40,14 @@ module.exports = new Command({
 		
 		let pages = [];
 		for (let i = 0; i < Math.ceil(guildQueue.songs.length / 10); i++) {
-			pages[i] = new MessageEmbed()
+			pages[i] = new EmbedBuilder()
 				.setColor(0x3399FF)
 				.setAuthor({
         		    name: client.user.username,
         		    url: homepage,
         		    iconURL: client.user.displayAvatarURL({ size: 1024, dynamic: true })
         		})
-				.setDescription(`${guildQueue.songs.map((song, index) => `\`${index}.\` \`${song.length}\` [**${song.title}**](${song.url}) - <@${song.requester.id}>${song.requester2 && song.requester.id != song.requester2.id ? ` <@${song.requester2.id}>` : ''}`).slice(i * 10 + 1, i * 10 + 11).join('\n')}`);
+				.setDescription(`${guildQueue.songs.map((song, index) => `\`${index}.\` \`${song.length}\` [**${song.title}**](${song.url}) - <@${song.requester.id}>${song.requester2 && song.requester.id != song.requester2.id ? ` <@${song.requester2.id}>` : ''}`).slice(i * 10 + 1, i * 10 + 11).join('\n')}` || `Queue data unavailable.`);
 		}
 		
 		let totalLength = 0;

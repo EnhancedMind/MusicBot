@@ -1,3 +1,20 @@
+# Version 0.4.1
+Updated discord.js to version 14.9.0  
+Changed the code to accomodate for the new discord.js version  
+Updated discord.js/voice to version 0.16.0  
+Updated ffmpeg-static to version 5.1.0  
+Updated yt-search to version 2.10.4  
+Updated libsodium-wrappers to version 0.7.11  
+Forgot to update config.json.example in 0.4.0, now it's updated  
+Removed unused requirements from join command  
+The prune command was updated to work with discord.js 14  
+Fixed bot occasionally crashing when sending queue command soon after joining the voice channel as the embed description was an empty string unacceptable by the discord API  
+Updated paginator so buttons are not sent when there is only one page  
+Fixed the nowplaying command so it doesn't crash when the message is deleted  
+Updated the reaction collector so they don't crash when the message is deleted (discord.js v14 changed stuff)  
+Fixed response edits and deletions so they don't crash when the message is deleted  
+Fixed removing reactions so they don't crash when the message is deleted  
+
 # Version 0.4.0
 The commands requiring elevated permissions can now be used by bot owner even without the elevated permissions  
 Command category folders now start with number and they are sorted by that number  

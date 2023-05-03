@@ -2,11 +2,12 @@ const Discord = require('discord.js');
 const Command = require('./Command');
 const Event = require('./Event');
 
-const intents = new Discord.Intents([
-	Discord.Intents.FLAGS.GUILDS,
-	Discord.Intents.FLAGS.GUILD_VOICE_STATES,
-    Discord.Intents.FLAGS.GUILD_MESSAGES,
-	Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+const intents = new Discord.IntentsBitField([
+	Discord.GatewayIntentBits.Guilds,
+	Discord.GatewayIntentBits.GuildVoiceStates,
+	Discord.GatewayIntentBits.GuildMessages,
+	Discord.GatewayIntentBits.GuildMessageReactions,
+	Discord.GatewayIntentBits.MessageContent
 ]);
 
 const { version, homepage } = require('../../package.json');
@@ -54,6 +55,7 @@ class Client extends Discord.Client {
 				const event = require(`../Events/${file}`);
 				fileLog(`[INFO] Event ${event.event} loaded`)
 				this.on(event.event, event.run.bind(null, this));
+				this.rest.on(event.event, event.run.bind(null, this));
 			});
 
         this.login(token);

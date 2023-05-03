@@ -1,6 +1,6 @@
 const Command = require('../../Structures/Command');
 
-const { MessageEmbed, ReactionCollector } = require('discord.js');
+const { EmbedBuilder, ReactionCollector } = require('discord.js');
 const ytsr = require('yt-search');
 
 const timeConverter = require('../../Data/time');
@@ -33,7 +33,7 @@ module.exports = new Command({
 
 		const result = await ytsr(args.join(' '));
 
-		if (result < 1) return response.edit(`${error} Error finding video.`);
+		if (result < 1 && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) return response.edit(`${error} Error finding video.`);
 
 		for (let i = 0; i < 5; i++) {
 			songs.push({
@@ -47,13 +47,13 @@ module.exports = new Command({
 		}
 
 		// create a new embed with the description of first five results
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(0x3399FF)
 			.setTitle('Search Results')
 			.setDescription(songs.map((song, index) => `${emojiList[index]} \`[${song.length}]\` [**${song.title}**](${song.url})`).join('\n'));
 
 		// send the embed as response
-		response.edit({ content: `${success} Search results for \`${args.join(' ')}\`:`, embeds: [embed] });
+		if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} Search results for \`${args.join(' ')}\`:`, embeds: [embed] });
 
         const react = async () => { 
             for (const emoji of emojiList) {
@@ -71,7 +71,7 @@ module.exports = new Command({
 		const collector = new ReactionCollector(response, { filter, time: 35000 });
 
 		// on collect
-		collector.on('collect', (reaction, user) => {
+		collector.on('collect', async (reaction, user) => {
 			if (reaction.count < 2) return;
 
 			reaction.users.remove(user);
@@ -80,7 +80,7 @@ module.exports = new Command({
 
 			const index = emojiList.indexOf(reaction.emoji.name);
 			if (index >= 5) {
-				response.edit({ content:`${success} Cancelled search.`, embeds: [] });
+				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content:`${success} Cancelled search.`, embeds: [] });
 				collector.stop();
 				return;
 			}
@@ -93,21 +93,22 @@ module.exports = new Command({
 				queue.construct(message, [ songs[index] ]);
 
 				queue.player(message.guild.id);
-				response.edit({ content: `${success} Added **${songs[index].title}** (\`${songs[index].length}\`) to begin playing`, embeds: [] });
+				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} Added **${songs[index].title}** (\`${songs[index].length}\`) to begin playing`, embeds: [] });
 			}
 			else {
 				if (position) queue.unshift(message.guild.id, songs[index]);
 				else queue.push(message.guild.id, songs[index]);
-				response.edit({ content: `${success} Added **${songs[index].title}** (\`${songs[index].length}\`) ${[ 'now', 'n' ].includes(position) ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `, embeds: [] });
+				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} Added **${songs[index].title}** (\`${songs[index].length}\`) ${[ 'now', 'n' ].includes(position) ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `, embeds: [] });
 				if ( [ 'now', 'n' ].includes(position) ) queue.skip(message.guild.id);
 			}
 			collector.stop();
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
+			if (reason.endsWith('Delete')) return;
 			//wait for allEMoji to be true
 			while (!allEmoji) await new Promise(resolve => setTimeout(resolve, 100));
-            if (response.deletable) response.reactions.removeAll();
+            response.reactions.removeAll();
         });
 	}
 });

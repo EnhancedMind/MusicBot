@@ -38,7 +38,12 @@
         "updateInterval": 7500,
         "loudnessNormalization": false,
         "selfDeaf": false,
-        "debug": false
+        "debug": false,
+        "library": {
+            "player": "play-dl",
+            "downloader": "ytdl-core",
+            "info": "ytdl-core"
+        }
     },
     "logs": {
         "resetLogOnStart": false,

@@ -8,7 +8,7 @@ logs/
 test.js
 test.bat
 src/Events/resume.js
-src/Commands/fun/
+src/Commands/4_fun/
 .vscode/
 .VSCodeCounter/
 config/*.json
