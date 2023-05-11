@@ -1,5 +1,7 @@
 const Command = require('../../Structures/Command');
 
+const { ActivityType } = require('discord.js');
+
 const { bot: { ownerID }, status: { status, game }, emoji: { success, error }, response: { invalidPermissions } } = require('../../../config/config.json');
 
 
@@ -12,7 +14,7 @@ module.exports = new Command({
         client.user.setStatus(status);
         client.user.setActivity({
 			name: game,
-			type: 'PLAYING'
+			type: ActivityType.Playing
 		});
 		message.channel.send(`${success} Reloaded!`);
 	}

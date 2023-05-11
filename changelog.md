@@ -1,3 +1,21 @@
+# Version 0.4.2
+About command now displays the discord.js version  
+About command now displays the number of active connections  
+The bot can now also be mentioned in the command so prefix doesn't have to be used and remembered  
+When play-dl or ytdl-core throws an error in the player, the exception is now handled so the bot now logs it and sends the error message to the default channel for the guild  
+Changed the FFmpeg output format in player from wav to opus  
+Changed the FFmpeg options to set the bitrate to 96kbps and the codec to libopus  
+Fixed the aloneTimeUntilStop to never leave when the number is negative, not <= 0  
+Updated README.md for aloneTimeUntilStop  
+Added a error catcher the the save command so it doesn't crash when DM can't be sent (bot is blocked by user or user has DMs disabled)  
+Updated discord.js to version 14.11.0  
+Fixed the activity not showing due to the new discord.js version  
+Updated the last restart to be the localeString set in config.json  
+The skipping now force stops the player instead of unpipeing it's resource  
+The shuffle command now doesn't say "your entries" as it shuffles the entire queue  
+The shuffle command can now be used by bot owner even when he isn't in the voice channel  
+Updated the installation instructions in README.md  
+
 # Version 0.4.1
 Updated discord.js to version 14.9.0  
 Changed the code to accomodate for the new discord.js version  

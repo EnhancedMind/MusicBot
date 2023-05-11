@@ -1,5 +1,7 @@
 const Event = require('../Structures/Event');
 
+const { ActivityType } = require('discord.js');
+
 const { consoleLog } = require('../Data/Log');
 const { status: { status, game } } = require('../../config/config.json');
 
@@ -9,6 +11,6 @@ module.exports = new Event('ready', async (client) => {
     client.user.setStatus(status);
     client.user.setActivity({
         name: game,
-        type: 'PLAYING'
+        type: ActivityType.Playing
     });
 });

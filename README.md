@@ -1,7 +1,7 @@
 # Music Bot
 A complete code to download for a Discord Music Bot  
--> Just a discord music bot with a lot of functionality :)  
--> type `-help` in chat to learn more when you set up the bot  
+-> Just a discord music bot with a lot of music functionality, no excess moderation, just music :)  
+-> type `-help` or `@botmention help` in chat to learn more when you set up the bot  
 
 Inspired by [jagrosh/MusicBot](https://github.com/jagrosh/MusicBot)  
   
@@ -99,7 +99,7 @@ Copy the `config.json.example` in the config folder and rename it to `config.jso
 - `player.playlistFolderPath`: the folder where the playlists will be saved  
 - `player.stayInChannel`: whether to stay in the voice channel after the queue is empty or not  
 - `player.maxTime`: the maximum length of song that will be played - 0 for unlimited  
-- `player.aloneTimeUntilStop`: the time in seconds until the bot leaves the voice channel if there isn't anyone in the channel  
+- `player.aloneTimeUntilStop`: the time in seconds until the bot leaves the voice channel if there isn't anyone in the channel. 0 to leave immediately, -1 to leave when queue ends and player stops when the channel is empty or never when loop is enabled.  
 - `player.forbiddenKeywords`: song titles that will not be played if they contain any of the keywords  
 - `player.updateInterval`: the interval in milliseconds that will be used to update the nowplaying command (not recommended to go below 7500)  
 - `player.loudnessNormalization`: whether to normalize the loudness of the songs (not recommended, currently working only for downloaded songs)  
@@ -120,8 +120,18 @@ To use the project you will need:
 [Node JS v16.11 or newer](https://nodejs.org/en/)  
 <br>
 
-You will need to install some modules using the following command:  
-`npm i`  
+Download the project either from main branch or from the [releases page](https://github.com/EnhancedMind/WelcomerBot/releases/latest).  
+Extract it somewhere on your computer and follow the configuration steps in the bot section, the others are for more advanced users.  
+Open command prompt in the folder where you extracted the project and install the dependencies using the following command:
+`npm i`
+After that is done, you can start the bot using the following command:
+`npm start`
+<br>
+
+If you want to use the bot 24/7, you will need to host it somewhere. You can use some online hosting services or for example a Raspberry Pi (model 4 is plenty fast for this).  
+You can also use the attached Dockerfile to build a docker image and run it in a container.  
+
+## If you have any questions, feel free to ask.
 <br>
   
 ### Please do not withdraw the license and keep the credits on this project.

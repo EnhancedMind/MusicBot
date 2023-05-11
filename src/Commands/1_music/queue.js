@@ -11,7 +11,7 @@ const { homepage } = require('../../../package.json');
 
 module.exports = new Command({
 	name: 'queue',
-	aliases: [ 'q' ],
+	aliases: [ 'q', 'list' ],
 	syntax: 'queue <page>',
 	description: 'Shows the current queue.',
 	async run(message, args, client) {

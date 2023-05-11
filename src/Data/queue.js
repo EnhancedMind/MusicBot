@@ -112,18 +112,29 @@ const queue = {
             return;
         }
 
-        if (!options.localPath && library.player == 'ytdl-core') this.queues[guild].resource.ytdl = ytdl(this.queues[guild].songs[0].url, { quality: 'highestaudio', highWaterMark: 1 << 25 }); // highWaterMark: 1048576 * 32  fixes stream stopping (for a while) // also posible 1 << 25
-        else if (!options.localPath && library.player == 'play-dl') this.queues[guild].resource.ytdl = (await playdl.stream(this.queues[guild].songs[0].url, { quality: 2, discordPlayerCompatibility: true })).stream; //discordPlayerCompatibility for ffmpeg compatibility
-        else this.queues[guild].resource.ytdl = createReadStream(options.localPath);
-        this.queues[guild].resource.ytdl.on('error', err => this.queues[guild].player.emit('error', err, null, true) );
+        try {
+            if (!options.localPath && library.player == 'ytdl-core') this.queues[guild].resource.ytdl = ytdl(this.queues[guild].songs[0].url, { quality: 'highestaudio', highWaterMark: 1 << 25 }); // highWaterMark: 1048576 * 32  fixes stream stopping (for a while) // also posible 1 << 25
+            else if (!options.localPath && library.player == 'play-dl') this.queues[guild].resource.ytdl = (await playdl.stream(this.queues[guild].songs[0].url, { quality: 2, discordPlayerCompatibility: true })).stream; //discordPlayerCompatibility for ffmpeg compatibility
+            else this.queues[guild].resource.ytdl = createReadStream(options.localPath);
+            this.queues[guild].resource.ytdl.on('error', err => this.queues[guild].player.emit('error', err, null, true) );
+        }
+        catch (err) {
+            this.queues[guild].player.emit('error', err, null, true);
+            return;
+        }
+        
 
         const ffmpegOptions = [
             // Remove ffmpeg's console spamming
             '-loglevel', '8', '-hide_banner',
             // Set input
             '-i', 'pipe:3',
+            // set codec to opus
+            '-c:a', 'libopus',
+            // set bitrate to 96k
+            '-b:a', '96k',
             // Define output stream
-            '-f', 'wav', 'pipe:4',
+            '-f', 'opus', 'pipe:4',
         ]
 
         if (options.seek > 0) ffmpegOptions.splice(ffmpegOptions.length - 3, 0, '-ss', `${options.seek}`);  // seek to time
@@ -196,6 +207,7 @@ const queue = {
         this.queues[guild].repeat = false;
 
         unpipe(guild);
+        this.queues[guild].player.stop();
 
         await new Promise(resolve => setTimeout(resolve, 250));
         this.queues[guild].repeat = repeat;
@@ -236,7 +248,7 @@ const queue = {
     },
     timeout: (guild, clear = false) => {
         if (clear) return clearTimeout(this.queues[guild].aloneTimeout);
-        if (aloneTimeUntilStop <= 0) return;
+        if (aloneTimeUntilStop < 0) return;
         this.queues[guild].aloneTimeout = setTimeout(() => {
             if (this.queues[guild]) {
                 this.queues[guild].connection.destroy();

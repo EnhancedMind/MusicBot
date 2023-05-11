@@ -5,8 +5,7 @@ howto.md
 .gitattributes
 src/notes.md
 logs/
-test.js
-test.bat
+test*
 src/Events/resume.js
 src/Commands/4_fun/
 .vscode/

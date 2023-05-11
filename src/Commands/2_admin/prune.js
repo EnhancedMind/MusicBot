@@ -1,7 +1,7 @@
 const Command = require('../../Structures/Command.js');
 
 const { PermissionsBitField } = require('discord.js');
-const { bot: { prefix, ownerID }, emoji: { success, warning, error }, response: { missingArguments, invalidPermissions, invalidNumber } } = require('../../../config/config.json');
+const { bot: { prefix, ownerID }, emoji: { success, warning }, response: { missingArguments, invalidPermissions, invalidNumber } } = require('../../../config/config.json');
 
 module.exports = new Command({
 	name: 'prune',

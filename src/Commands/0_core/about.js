@@ -1,8 +1,9 @@
 const Command = require('../../Structures/Command');
 
 const { EmbedBuilder } = require('discord.js');
-const { bot: { prefix, ownerID } } = require('../../../config/config.json');
+const { bot: { prefix, ownerID }, logs: { timeFormat } } = require('../../../config/config.json');
 const { version, homepage, developerpage } = require('../../../package.json');
+const queue = require('../../Data/queue');
 
 
 module.exports = new Command({
@@ -10,6 +11,8 @@ module.exports = new Command({
 	aliases: [ ' ' ],
 	description: 'Shows information about the bot.',
 	async run(message, args, client) {
+		const queues = queue.get();
+
 		const embed = new EmbedBuilder()
 			.setColor(0x3399FF)
 			.setAuthor({
@@ -19,13 +22,13 @@ module.exports = new Command({
 			})
 			.setDescription(`Hello! I am **${client.user.username}**, a music bot that is [easy to host yourself!](${homepage}) (v${version})
 			I am owned by **${(await client.users.fetch(ownerID)).username}** and I am developed by [**EnhancedMind**](${developerpage}).
-			I run in **Node.js** using **Discord.js** libraries.
+			I run in **Node.js** using **Discord.js**(v${require('discord.js').version}) libraries.
 			Type \`${prefix}help\` to see my commands!
 			
 			Some of my features include:
 			\`\`\`🎶 High-quality music playback.\n🎶 Easy to host yourself.\`\`\``)
 			.setFooter({
-				text: `Last restart: ${new Date(client.readyAt).toLocaleString()}`
+				text: `Last restart: ${new Date(client.readyAt).toLocaleString(timeFormat)}    ·    ${queues && Object.keys(queues).length > 0 ? `${Object.keys(queues).length} active connection${Object.keys(queues).length > 1 ? 's' : ''}` : 'No active connections'}`
 			});
 
 		message.channel.send({ embeds: [ embed ] });
