@@ -33,7 +33,10 @@ module.exports = new Command({
 
 		const result = await ytsr(args.join(' '));
 
-		if (result < 1 && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) return response.edit(`${error} Error finding video.`);
+		if (result < 1) {
+			if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${error} Error finding video.`);
+			return;
+		}
 
 		for (let i = 0; i < 5; i++) {
 			songs.push({

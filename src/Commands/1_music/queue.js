@@ -20,10 +20,8 @@ module.exports = new Command({
 
         if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
 
-		// if no songs are in the queue, return message
 		if (!guildQueue.songs.length) return message.channel.send(`${warning} The queue is empty.`);
 		
-		// if only 1 song in queue, return message
 		if (guildQueue.songs.length == 1) {
 			const response = await message.channel.send(`${warning} There is only the current song in the queue.`);
 			await new Promise(resolve => setTimeout(resolve, 3500));
@@ -51,7 +49,7 @@ module.exports = new Command({
 		}
 		
 		let totalLength = 0;
-		guildQueue.songs.forEach(song => {
+		guildQueue.songs.slice(1).forEach(song => { // slice(1) to skip counting the current song
 			totalLength += Number(song.seconds);
 		});
 

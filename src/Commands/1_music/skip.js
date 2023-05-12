@@ -7,7 +7,7 @@ const { emoji: { success, warning }, response: { invalidNumber, wrongChannel, no
 module.exports = new Command({
 	name: 'skip',
 	aliases: [ 's' ],
-	syntax: 'skip <opt position>',
+	syntax: 'skip <opt \'to\' position>',
 	description: 'Skips the current song or to a song.',
 	async run(message, args, client) {
 		const guildQueue = queue.get(message.guild.id);

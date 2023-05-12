@@ -24,19 +24,19 @@ module.exports = new Command({
         if (message.member.voice.channel.id == message.guild.afkChannelId) return message.channel.send(`${warning} ${afkChannel}`);
 
         const guildQueue = queue.get(message.guild.id);
+        if (guildQueue && guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
+
         if (guildQueue && guildQueue.player.state.status == 'paused' && !args[0]) {
             guildQueue.player.unpause();
             message.channel.send(`${success} Resumed **${guildQueue.songs[0].title}**.`);
             return;
         }
 
-        if (guildQueue && guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
-
 		if (!args[0]) return message.channel.send(`${warning} ${missingArguments}`);
 
         let response, shuffle, position, dontEdit, songs = [];;  //declare 5 independent variables
         
-        if ( [ 'top', 't', 'now', 'n' ].includes(args[0].toLowerCase()) ) position = args.shift();
+        if ( [ 'top', 't', 'next', 'now', 'n' ].includes(args[0].toLowerCase()) ) position = args.shift();
 
         if (!guildQueue) {
             queue.construct(message, songs);
@@ -76,11 +76,11 @@ module.exports = new Command({
                         
                         switch (reaction.emoji.name) {
                             case emojiList[0]:
+                                collector.stop();
                                 await loadList(keywords[0], requester2, skipTitle);
                                 songs.forEach(element => {
                                     queue.push(message.guild.id, element);
                                 });
-                                collector.stop();
                                 break;
         
                             case emojiList[1]:
@@ -212,7 +212,7 @@ module.exports = new Command({
             else if (response.editable && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added ${shuffle ? 'and shuffled ' : ''}**${songs.length}** tracks!`);
         }
         else {
-            if (position) { // position can only be 'top', 't' or 'now', 'n'
+            if (position) { // position can only be 'top', 't', 'next' or 'now', 'n'
                 songs.slice().reverse().forEach(element => {
                     queue.unshift(message.guild.id, element);
                 });
@@ -224,7 +224,7 @@ module.exports = new Command({
                 });
                 if (shuffle) queue.shuffle(message.guild.id, guildQueue.songs.length);
             }
-            if (songs.length == 1 && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) ${[ 'now', 'n' ].includes(position) ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `);
+            if (songs.length == 1 && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) ${[ 'now', 'n' ].includes(position) || guildQueue.songs.length == 1 ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `);
             else if (response.editable && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added ${shuffle ? 'and shuffled ' : ''}**${songs.length}** tracks!`);
             
             if (guildQueue.player.state.status == 'idle') {

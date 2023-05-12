@@ -1,3 +1,16 @@
+# Version 0.4.3
+Added the lyrics command  
+Updated the displayed syntax for skip command in help menu (skip to position)  
+Fixed the play command so user can't use it to resume when he is in a wrong channel  
+Fixed the play command so if a URL of video with attached playlist is passed, multiple clicks on the reaction won't cause it to load the playlist multiple times  
+Fixed the play command so if there is a active connection for the guild but the queue is empty, the response will say to begin playing instead of added to queue at position 0 when the command is used  
+Added an 'alias' for 'play top' as 'play next' as it is more intuitive  
+Fixed the queue command so it doesn't count the currently playing song into the total queue length  
+Fixed the slowed command responses to say slowed and not nightcore  
+Updated the displayed syntax for the slowed command in help menu (slowed instead of slow)  
+Fixed the forceprune command so multiple clicks on the reaction won't cause it to fetch (and possibly delete) the messages multiple times  
+Fixed code for some response edits (search command) not stopping the code execution when the response is deleted  
+
 # Version 0.4.2
 About command now displays the discord.js version  
 About command now displays the number of active connections  

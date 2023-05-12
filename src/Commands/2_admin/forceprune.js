@@ -37,6 +37,8 @@ module.exports = new Command({
         collector.on('collect', async (reaction, user) => {
             switch (reaction.emoji.name) {
                 case emojiList[0]:
+                    collector.stop();
+
                     const result = await message.channel.messages.fetch({limit: args[0]});
                     result.delete(result.firstKey());  //remove the response message from the bulk delete
                     message.channel.bulkDelete(result);
@@ -44,8 +46,6 @@ module.exports = new Command({
                     if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Deleting ${args[0]} messages`);
                     await new Promise(resolve => setTimeout(resolve, 3750));
                     if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.delete();
-
-                    collector.stop();
                     break;
 
                 case emojiList[1]:

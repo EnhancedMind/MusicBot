@@ -8,7 +8,7 @@ const { emoji: { success, warning }, response: { wrongChannel, noMusic, invalidN
 module.exports = new Command({
 	name: 'slowed',
 	aliases: [ 'slow' ],
-	syntax: 'slow <speed>',
+	syntax: 'slowed <speed>',
 	description: 'Plays the current song in slowed mode from the current time. Speed is optional and defaults to 0.85x.',
 	async run(message, args, client) {
 		const guildQueue = queue.get(message.guild.id);
@@ -33,12 +33,12 @@ module.exports = new Command({
 				queue.unpipe(message.guild.id);
 				queue.player(message.guild.id, { inherit: true, localPath: path, speed: args[0] ? Number(args[0]) : 1.2 });
 
-				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Downloaded track for nightcore... Playing now!`);
+				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Downloaded track to be slowed... Playing now!`);
 			})
 			.catch(async err => {
-				consoleLog('[ERROR] Nightcore command failed to download track.', err);
+				consoleLog('[ERROR] Slowed command failed to download track.', err);
 
-				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${warning} Failed to download track for nightcore. (${err.message})`);
+				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${warning} Failed to download track to be slowed. (${err.message})`);
 			});
 	}
 });
