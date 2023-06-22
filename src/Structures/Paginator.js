@@ -25,10 +25,7 @@ const paginator = async (msg, pages, messageContent = null, page = 0, emojiList 
     let allEmoji = false;
     const react = async () => { 
         for (const emoji of emojiList) {
-            try {
-                curPage.react(emoji);
-            }
-            finally {}             
+            if ( (await curPage.channel.messages.fetch({ limit: 1, cache: false, around: curPage.id })).has(curPage.id) ) curPage.react(emoji);           
             await new Promise(resolve => setTimeout(resolve, 750));
         } 
         allEmoji = true;

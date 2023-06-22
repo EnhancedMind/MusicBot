@@ -1,5 +1,10 @@
 const { ignoreECONNRESET, terminateOnUncaughtException } = require('../config/config.json');
 
+process.on('unhandledRejection', (err) => {
+    if (err.name == 'DiscordAPIError[10008]') console.error('Unhandled Rejection: ', err);
+    else throw err;
+});
+
 //not a terrible hack or anything :^)
 if (ignoreECONNRESET) {
     process.on('uncaughtException', (err) => {

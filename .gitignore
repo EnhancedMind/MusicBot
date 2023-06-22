@@ -14,3 +14,4 @@ config/*.json
 config/Playlists/*.json
 !*.example
 *.old*
+nodemon.json

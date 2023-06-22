@@ -2,7 +2,9 @@ const Command = require('../../Structures/Command');
 
 const queue = require('../../Data/queue');
 const downloader = require('../../Data/downloader');
-const { emoji: { success, warning }, response: { wrongChannel, noMusic, invalidNumber } } = require('../../../config/config.json');
+const { consoleLog } = require('../../Data/Log');
+const timeConventer = require('../../Data/time');
+const { emoji: { success, warning }, response: { wrongChannel, noMusic, invalidNumber }, player: { downloaderMaxTimeSeconds } } = require('../../../config/config.json');
 
 
 module.exports = new Command({
@@ -23,6 +25,7 @@ module.exports = new Command({
 			return message.channel.send(`${success} Slow-mode disabled.`);
 		}
 
+		if (guildQueue.songs[0].seconds > downloaderMaxTimeSeconds) return message.channel.send(`${warning} Track is too long to download to be slowed. Maxiumum length is ${timeConventer(downloaderMaxTimeSeconds)}.`);
 		if (args[0] && isNaN(args[0])) return message.channel.send(`${warning} ${invalidNumber}`);
 		if (args[0] < 0.5 || args[0] > 2) return message.channel.send(`${warning} ${invalidNumber} (0.5 - 2)`);
 

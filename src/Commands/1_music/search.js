@@ -58,9 +58,9 @@ module.exports = new Command({
 		// send the embed as response
 		if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} Search results for \`${args.join(' ')}\`:`, embeds: [embed] });
 
-        const react = async () => { 
+		const react = async () => {
             for (const emoji of emojiList) {
-				response.react(emoji); 
+                if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.react(emoji);
                 await new Promise(resolve => setTimeout(resolve, 750));
             }
 			allEmoji = true;

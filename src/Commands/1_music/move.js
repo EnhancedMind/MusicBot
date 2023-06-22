@@ -15,14 +15,11 @@ module.exports = new Command({
 
         if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
 
-		// if not enough args
 		if (args.length < 2) return message.channel.send(`${warning} ${missingArguments}`);
-		// if args[0] is not a number, return
 		if (isNaN(args[0]) || isNaN(args[1])) return message.channel.send(`${error} ${invalidNumber}`);
 
 		if (args[0] > guildQueue.songs.length - 1 || args[1] > guildQueue.songs.length - 1) return message.channel.send(`${error} ${invalidNumber}`);
 		
-		//send message moved from to
 		message.channel.send(`${success} Moved **${guildQueue.songs[args[0]].title}** from **${args[0]}** to **${args[1]}**`);
 		
 		queue.move(message.guild.id, args[0], args[1]);

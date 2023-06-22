@@ -32,18 +32,28 @@
     "player": {
         "playlistFolderPath": "Playlists",
         "stayInChannel": true,
-        "maxTime": 0,
-        "aloneTimeUntilStop": 180,
-        "forbiddenKeywords": [ "reznik" ],
-        "updateInterval": 7500,
+        "maxTimeSeconds": 0,
+        "downloaderMaxTimeSeconds": 1800,
+        "aloneTimeUntilStopSeconds": 180,
+        "forbiddenKeywords": [ "forbiddenKeyword1", "forbiddenKeyword2" ],
+        "updateIntervalMiliseconds": 7500,
         "loudnessNormalization": false,
+        "bitrate": "96k",
         "selfDeaf": false,
         "debug": false,
         "library": {
             "player": "play-dl",
             "downloader": "ytdl-core",
             "info": "ytdl-core"
-        }
+        },
+        "sponsorBlock": {
+            "enabled": true,
+            "clientUUID": "your client uuid v4",
+            "minSegmentLengthSeconds": 5,
+            "maxStartOffsetSeconds": 3,
+            "maxEndOffsetSeconds": 4
+        },
+        "youtubeCookie": "a=1; b=2; c=3...  LEAVE THIS BLANK IF NOT USED!!!!!!!"
     },
     "logs": {
         "resetLogOnStart": false,

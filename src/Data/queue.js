@@ -5,9 +5,19 @@ const { createAudioResource, createAudioPlayer, joinVoiceChannel } = require('@d
 const ytdl = require('ytdl-core');
 const playdl = require('play-dl');
 const ffmpeg = require('ffmpeg-static');
+const { SponsorBlock } = require('sponsorblock-api');
+const uuid = require('uuid');
 const { consoleLog } = require('./Log');
-const { emoji: { error }, player: { stayInChannel, aloneTimeUntilStop, updateInterval, loudnessNormalization, selfDeaf, debug, library } } = require('../../config/config.json');
+const { emoji: { success, error }, player: { stayInChannel, aloneTimeUntilStopSeconds, updateIntervalMiliseconds, loudnessNormalization, bitrate, selfDeaf, debug, library, sponsorBlock, youtubeCookie } } = require('../../config/config.json');
 
+let sponsorBlockClient
+if (sponsorBlock.enabled) {
+    if (!uuid.validate(sponsorBlock.clientUUID)) {
+        consoleLog('The provided SponsorBlock client UUID is invalid. Here is a new one: ' + uuid.v4());
+        process.exit(1);
+    }
+    sponsorBlockClient = new SponsorBlock(sponsorBlock.clientUUID);
+}
 
 const queue = {
     get: guild => {
@@ -98,6 +108,7 @@ const queue = {
         options.seek ? this.queues[guild].resource.seek = options.seek : this.queues[guild].resource.seek = 0;
         options.localPath ? this.queues[guild].resource.ffmpeg.localPath = options.localPath : this.queues[guild].resource.ffmpeg.localPath = null;
 
+        clearInterval(this.queues[guild].endSegmentInterval);
 
         if (this.queues[guild].songs.length < 1) {
             this.queues[guild].updater.emitter.emit('end');
@@ -112,9 +123,10 @@ const queue = {
             return;
         }
 
+        const isSoundcloud = /^https?:\/\/(www\.|api\.)?soundcloud\.com\/.*$/.test(this.queues[guild].songs[0].url);
         try {
-            if (!options.localPath && library.player == 'ytdl-core') this.queues[guild].resource.ytdl = ytdl(this.queues[guild].songs[0].url, { quality: 'highestaudio', highWaterMark: 1 << 25 }); // highWaterMark: 1048576 * 32  fixes stream stopping (for a while) // also posible 1 << 25
-            else if (!options.localPath && library.player == 'play-dl') this.queues[guild].resource.ytdl = (await playdl.stream(this.queues[guild].songs[0].url, { quality: 2, discordPlayerCompatibility: true })).stream; //discordPlayerCompatibility for ffmpeg compatibility
+            if (!options.localPath && library.player == 'ytdl-core' && !isSoundcloud) this.queues[guild].resource.ytdl = ytdl(this.queues[guild].songs[0].url, { quality: 'highestaudio', highWaterMark: 1 << 25, requestOptions: { headers: { cookie: youtubeCookie } } }); // highWaterMark: 1048576 * 32  fixes stream stopping (for a while) // also posible 1 << 25
+            else if (!options.localPath && library.player == 'play-dl' || isSoundcloud) this.queues[guild].resource.ytdl = (await playdl.stream(this.queues[guild].songs[0].url, { quality: 2, discordPlayerCompatibility: true })).stream; //discordPlayerCompatibility for ffmpeg compatibility
             else this.queues[guild].resource.ytdl = createReadStream(options.localPath);
             this.queues[guild].resource.ytdl.on('error', err => this.queues[guild].player.emit('error', err, null, true) );
         }
@@ -122,7 +134,7 @@ const queue = {
             this.queues[guild].player.emit('error', err, null, true);
             return;
         }
-        
+
 
         const ffmpegOptions = [
             // Remove ffmpeg's console spamming
@@ -132,7 +144,7 @@ const queue = {
             // set codec to opus
             '-c:a', 'libopus',
             // set bitrate to 96k
-            '-b:a', '96k',
+            '-b:a', bitrate,
             // Define output stream
             '-f', 'opus', 'pipe:4',
         ]
@@ -163,18 +175,64 @@ const queue = {
         );
         this.queues[guild].resource.resource.volume.setVolume( this.queues[guild].resource.volume );
 
-        
+
         //updater can't be moved to constructor because it is cleared on queue end, but the bot doesn't disconnect so constructor is not called again
-        if (!this.queues[guild].updater.active && updateInterval > 0) {
+        if (!this.queues[guild].updater.active && updateIntervalMiliseconds > 0) {
             this.queues[guild].updater.interval = setInterval(() => {
                 if (this.queues[guild] && this.queues[guild].resource.resource)
-                    this.queues[guild].updater.emitter.emit('update', this.queues[guild].songs[0], this.queues[guild].resource.resource.playbackDuration/1000 + this.queues[guild].resource.seek);
-            }, updateInterval < 5000 ? 5000 : updateInterval);
+                    this.queues[guild].updater.emitter.emit('update', this.queues[guild].songs[0], this.queues[guild].resource.resource.playbackDuration/1000 + this.queues[guild].resource.seek, this.queues[guild].songs[1]);
+            }, updateIntervalMiliseconds < 5000 ? 5000 : updateIntervalMiliseconds);
             this.queues[guild].updater.active = true;
         }
-    
+
         this.queues[guild].player.play(this.queues[guild].resource.resource);
-        this.queues[guild].updater.emitter.emit('update', this.queues[guild].songs[0], options.seek ? 0 + options.seek : 0);
+        this.queues[guild].updater.emitter.emit('update', this.queues[guild].songs[0], options.seek ? 0 + options.seek : 0, this.queues[guild].songs[1]);
+
+
+        if (!sponsorBlock.enabled || options.localPath || isSoundcloud) return;
+
+        const settings = require('../../config/settings.json');
+
+        if (settings.guild[guild] && settings.guild[guild].sponsorBlock && settings.guild[guild].sponsorBlock.start == false && settings.guild[guild].sponsorBlock.end == false) return;
+
+        if (!this.queues[guild].songs[0].segments) {
+            this.queues[guild].songs[0].segments = [];
+            try {
+                const videoID = ytdl.getVideoID(this.queues[guild].songs[0].url);
+                this.queues[guild].songs[0].segments = await sponsorBlockClient.getSegments(videoID, ['music_offtopic']);
+            } 
+            catch (err) {
+                if (err.name != 'ResponseError') return consoleLog('[WARN] SponsorBlock API error: ' + err.message, err);
+            }
+        }
+
+        const segments = this.queues[guild].songs[0].segments;
+        if (!segments.length) return;
+        const lastindex = segments.length - 1;
+        if (!this.queues[guild].songs[0].skippedSegments) this.queues[guild].songs[0].skippedSegments = [];
+
+        if (segments[0].startTime < sponsorBlock.maxStartOffsetSeconds && segments[0].endTime - segments[0].startTime > sponsorBlock.minSegmentLengthSeconds && !this.queues[guild].songs[0].skippedSegments.includes(segments[0].UUID)) {
+            if (settings.guild[guild] && settings.guild[guild].sponsorBlock && settings.guild[guild].sponsorBlock.start == false) null;  //basically return but not so code after this 'return' executes
+            else {
+                this.queues[guild].songs[0].skippedSegments.push(segments[0].UUID);
+                player(guild, { inherit: true, seek: segments[0].endTime - 0.1 });
+                if (settings.guild[guild] && settings.guild[guild].sponsorBlock && settings.guild[guild].sponsorBlock.messages == false) null;
+                else this.queues[guild].textChannel.send(`${success} Skipping music off-topic segment to ${(segments[0].endTime - 0.1).toFixed(1)} seconds.`);
+            }
+        }
+        else if (segments[lastindex].videoDuration - segments[lastindex].endTime < sponsorBlock.maxEndOffsetSeconds && segments[lastindex].endTime - segments[lastindex].startTime > sponsorBlock.minSegmentLengthSeconds) {
+            if (settings.guild[guild] && settings.guild[guild].sponsorBlock && settings.guild[guild].sponsorBlock.end == false) null;
+            else {
+                this.queues[guild].endSegmentInterval = setInterval(() => {
+                    if (this.queues[guild].resource.resource.playbackDuration/1000 + this.queues[guild].resource.seek > segments[lastindex].startTime + 0.1) {
+                        skip(guild);
+                        if (settings.guild[guild] && settings.guild[guild].sponsorBlock && settings.guild[guild].sponsorBlock.messages == false) null;
+                        else this.queues[guild].textChannel.send(`${success} Skipping the current song as it has only music off-topic segments left.`);
+                        clearInterval(this.queues[guild].endSegmentInterval);
+                    }
+                }, 100);
+            }
+        }
     },
     push: (guild, song) => {
         this.queues[guild].songs.push(song);
@@ -188,7 +246,7 @@ const queue = {
         let randomIndex;
 
         while (currentIndex != start) { // 1 to not shuffle 1st
-            randomIndex = Math.floor(Math.random() * currentIndex) + start;
+            randomIndex = Math.floor(Math.random() * ( currentIndex - start )) + start;
             currentIndex--;
 
             [ this.queues[guild].songs[currentIndex], this.queues[guild].songs[randomIndex] ] = [ 
@@ -248,14 +306,14 @@ const queue = {
     },
     timeout: (guild, clear = false) => {
         if (clear) return clearTimeout(this.queues[guild].aloneTimeout);
-        if (aloneTimeUntilStop < 0) return;
+        if (aloneTimeUntilStopSeconds < 0) return;
         this.queues[guild].aloneTimeout = setTimeout(() => {
             if (this.queues[guild]) {
                 this.queues[guild].connection.destroy();
                 this.queues[guild].updater.emitter.emit('end');
                 terminate(guild);
             }
-        }, aloneTimeUntilStop * 1000);
+        }, aloneTimeUntilStopSeconds * 1000);
     },
     unpipe: guild => {
         this.queues[guild].resource.ytdl.unpipe(this.queues[guild].resource.ffmpeg.process.stdio[3]);
@@ -264,10 +322,9 @@ const queue = {
     },
     delete: guild => {
         clearInterval(this.queues[guild].updater.interval);
+        clearInterval(this.queues[guild].endSegmentInterval);
         delete this.queues[guild];
-        if (existsSync(`./temp/${guild}`)) {
-            rmSync(`./temp/${guild}`, { force: true, recursive: true, maxRetries: 10, retryDelay: 350 });
-        }
+        if (existsSync(`./temp/${guild}`)) rmSync(`./temp/${guild}`, { force: true, recursive: true, maxRetries: 10, retryDelay: 350 });
     },
 
 

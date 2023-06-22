@@ -1,3 +1,23 @@
+# Version 0.5.0
+Added auto skipping of music off-topic segments using SponsorBlock data licensed used under CC BY-NC-SA 4.0 from https://sponsor.ajay.app/.  
+Added support for cookies  
+Changed the config time variables to have the seconds/milliseconds suffix in their name  
+Added sponsorblock command to enable/disable skipping of music off-topic per guild  
+Added option to config to set the maximum length of song that can be nightcored or slowed because the song has to be downloaded to local storage  
+Added option to config to set ffmpeg bitrate  
+Fixed the nowplaying command so it doesn't crash when the bot is in a voice channel but the queue is empty  
+Fixed README links  
+Added support for soundcloud tracks (playlists are not supported)  
+Added makelistfromqueue command to create a local playlist from the queue  
+Fixed the bot sometimes showing 'ghost' active connections in the about command when they are already destroyed  
+Fixed the reaction collectors to remove all the reactions when it is triggered before all the reactions are placed  
+Fixed the bot crashing when selecting attached playlist in the play command before the cancel reaction is placed  
+Added unhandledRejection handler for discordAPIErrors unknown message to prevent the bot from crashing in edge cases  
+Updated to use the new discord naming system. Will use displayName instead of username when discord.js stable version updates  
+Fixed shuffleing local playlists that are added to the end of the queue  
+Updated the nowplaying command to show the next song in the queue  
+Moved the playerdebug command to the admin category as the music category is full (help menu embed field limit)  
+
 # Version 0.4.3
 Added the lyrics command  
 Updated the displayed syntax for skip command in help menu (skip to position)  

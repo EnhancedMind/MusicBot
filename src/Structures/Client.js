@@ -14,6 +14,7 @@ const { version, homepage } = require('../../package.json');
 
 const { readdirSync } = require('fs');
 const { initLog, fileLog, consoleLog } = require('../Data/Log');
+const checkSettingsFiles = require('../Data/settings');
 const { bot: { token } } = require('../../config/config.json');
 
 
@@ -29,6 +30,7 @@ class Client extends Discord.Client {
 
     start() {
 		initLog();
+		checkSettingsFiles();
 
 		consoleLog(`\nThis application comes from a GitHub project ${homepage.substring(19, homepage.length - 7)} (${homepage}).\nThe use is possible for free while keeping the credits.\nMade by EnhancedMind\nVersion ${version}\n`);
 

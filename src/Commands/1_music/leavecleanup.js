@@ -16,7 +16,6 @@ module.exports = new Command({
 
         if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
 
-		// check if message author has admin permissions
 		if (!message.member.permissions.has(PermissionsBitField.Flags.ManageChannels) && message.author.id != ownerID) return message.channel.send(`${error} ${invalidPermissions}`);
 
 		// get list of users in voice channel

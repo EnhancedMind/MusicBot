@@ -21,11 +21,11 @@ module.exports = new Command({
         const response = await message.channel.send(`${warning} Are you sure you want to delete ${args[0]} messages from all users?`);
 
         let allEmoji = false;
-        const react = async () => { 
+        const react = async () => {
             for (const emoji of emojiList) {
-                response.react(emoji); 
+                if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.react(emoji);
                 await new Promise(resolve => setTimeout(resolve, 750));
-            } 
+            }
             allEmoji = true;
         }
         react();
