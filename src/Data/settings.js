@@ -1,5 +1,7 @@
 const { existsSync, writeFileSync } = require('fs');
+const uuid = require('uuid');
 const { fileLog, consoleLog } = require('./Log');
+const { player: { sponsorBlock } } = require('../../config/config.json');
 
 const fileVersion = '1.0';
 
@@ -19,7 +21,14 @@ const checkSettingsFiles = () => {
             process.exit(1);
         }
     }
+
+    if (sponsorBlock.enabled) {
+        if (!uuid.validate(sponsorBlock.clientUUID)) {
+            consoleLog('The provided SponsorBlock client UUID is invalid. Here is a new one: ' + uuid.v4());
+            process.exit(1);
+        }
+    }
     fileLog('[INFO] Settings file checked!');
 }
 
-module.exports = checkSettingsFiles
+module.exports = checkSettingsFiles;

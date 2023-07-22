@@ -15,7 +15,7 @@ const initLog = () => {
     else if (logToFile) {
         for (let i = 0; i < 3; i++) fileLog();
     }
-    fileLog('[INFO] Process start');
+    fileLog(`[INFO] Process start (PID: ${process.pid})`);
 }
 
 const fileLog = async (message = '', ...data) => {

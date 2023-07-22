@@ -9,7 +9,7 @@ module.exports = new Command({
 	aliases: [ 'connect', 'fuckon' ],
 	description: 'Joins the voice channel of the author.',
 	async run(message, args, client) {
-		const guildQueue = queue.get(message.guild.id);
+		const guildQueue = await queue.get(message.guild.id);
         if (guildQueue) return message.channel.send(`${warning} I'm already in a voice channel.`);
 
 		queue.construct(message, []);

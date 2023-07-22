@@ -16,17 +16,15 @@ module.exports = new Command({
 	syntax: 'search <query>',
 	description: 'Searches YouTube for a provided query.',
 	async run(message, args, client) {
-		// if no voice channel return
 		if (!message.member.voice.channel) return message.channel.send(`${warning} ${noChannel}`);
         if (message.member.voice.channel.id == message.guild.afkChannelId) return message.channel.send(`${warning} ${afkChannel}`);
 
-		let guildQueue = queue.get(message.guild.id);
+		let guildQueue = await queue.get(message.guild.id);
         if (guildQueue && guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
 
-		// if no args return
 		if (!args[0]) return message.channel.send(`${warning} ${missingArguments}`);	
 
-		let songs = [], position, allEmoji = false;  //declare 4 independent variables
+		let songs = [], position, allEmoji = false;  //declare 3 independent variables
 		if ( [ 'top', 't', 'now', 'n' ].includes(args[0].toLowerCase()) ) position = args.shift();
 
 		const response = await message.channel.send(`${searching} Searching for \`[${args.join(' ')}]\``);
@@ -49,13 +47,11 @@ module.exports = new Command({
 			});			
 		}
 
-		// create a new embed with the description of first five results
 		const embed = new EmbedBuilder()
 			.setColor(0x3399FF)
 			.setTitle('Search Results')
 			.setDescription(songs.map((song, index) => `${emojiList[index]} \`[${song.length}]\` [**${song.title}**](${song.url})`).join('\n'));
 
-		// send the embed as response
 		if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} Search results for \`${args.join(' ')}\`:`, embeds: [embed] });
 
 		const react = async () => {
@@ -67,13 +63,10 @@ module.exports = new Command({
         }
         react(); 
 
-		// create a reaction filter
 		const filter = (reaction, user) => emojiList.includes(reaction.emoji.name) && user.bot == false;
 
-		// create a new reaction collector
 		const collector = new ReactionCollector(response, { filter, time: 35000 });
 
-		// on collect
 		collector.on('collect', async (reaction, user) => {
 			if (reaction.count < 2) return;
 
@@ -90,7 +83,7 @@ module.exports = new Command({
 
 			songs[index].requester = user;
 
-			guildQueue = queue.get(message.guild.id);
+			guildQueue = await queue.get(message.guild.id);
 
 			if (!guildQueue) {
 				queue.construct(message, [ songs[index] ]);
@@ -101,15 +94,20 @@ module.exports = new Command({
 			else {
 				if (position) queue.unshift(message.guild.id, songs[index]);
 				else queue.push(message.guild.id, songs[index]);
-				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} Added **${songs[index].title}** (\`${songs[index].length}\`) ${[ 'now', 'n' ].includes(position) ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `, embeds: [] });
-				if ( [ 'now', 'n' ].includes(position) ) queue.skip(message.guild.id);
+
+				if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit({ content: `${success} Added **${songs[index].title}** (\`${songs[index].length}\`) ${( [ 'now', 'n' ].includes(position) || guildQueue.songs.length == 1 ) ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `, embeds: [] });
+				
+				if ( (await queue.get(message.guild.id)).player.state.status == 'idle') {
+					await new Promise(resolve => setTimeout(resolve, 100));
+					if ( (await queue.get(message.guild.id)).player.state.status == 'idle') queue.player(message.guild.id);
+				}
+				else if ( [ 'now', 'n' ].includes(position) ) queue.skip(message.guild.id);
 			}
 			collector.stop();
 		});
 
 		collector.on('end', async (_, reason) => {
 			if (reason.endsWith('Delete')) return;
-			//wait for allEMoji to be true
 			while (!allEmoji) await new Promise(resolve => setTimeout(resolve, 100));
             response.reactions.removeAll();
         });

@@ -11,7 +11,7 @@ module.exports = new Command({
 	aliases: [ 'lc' ],
 	description: 'Removes all entries by users that are no longer in the voice channel. Requires Manage Channels permission.',
 	async run(message, args, client) {
-		const guildQueue = queue.get(message.guild.id);
+		const guildQueue = await queue.get(message.guild.id);
         if (!guildQueue) return message.channel.send(`${warning} ${noMusic}`);
 
         if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
@@ -21,7 +21,7 @@ module.exports = new Command({
 		// get list of users in voice channel
 		const voiceChannelUsers = message.guild.channels.cache.get(guildQueue.connection.joinConfig.channelId).members.map(member => member.id);
 		
-		const removedSongs = queue.leavecleanup(message.guild.id, voiceChannelUsers);
+		const removedSongs = await queue.leavecleanup(message.guild.id, voiceChannelUsers);
 
 		message.channel.send(`${success} ${removedSongs} entries have been removed from the queue.`);
 	}

@@ -16,14 +16,16 @@ module.exports = new Command({
         await message.channel.send(`${info} Shutting down...`);
 
         // destroy all connections
-        const queues = queue.get();
-        for (const [guildID, guildQueue] of Object.entries(queues)) {
-            guildQueue.textChannel.send(`${info} The bot is shutting down, destroying connection...`);
-            guildQueue.updater.emitter.emit('end');
-            guildQueue.connection.destroy();
+        const queues = await queue.get();
+        if (queues) {
+            for (const [guildID, guildQueue] of Object.entries(queues)) {
+                client.channels.cache.get(guildQueue.textChannelId).send(`${info} The bot is shutting down, destroying connection...`);
+                queue.delete(guildID);
+            }
+            // wait for all connections to be destroyed and updaters to be ended
+            await new Promise(resolve => setTimeout(resolve, 2500));
         }
-        // wait for all connections to be destroyed and updaters to be ended
-        await new Promise(resolve => setTimeout(resolve, 2500));
+
 
         client.destroy();
         process.exit(0);

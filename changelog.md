@@ -1,3 +1,14 @@
+# Version 0.6.0
+Changed the inner working to be multi-core, so the audio processing is now done in a separate process to prevent lags and buffering when commands are getting processed. With this the discord client logs in 2 times, but that is not a problem.  
+The nowplaying command now shows the current progress when called instead of 0  
+Changed the nowplaying progress bar from 15 to 20 segments  
+Added the description to the makelistfromqueue command  
+Fixed the search command so it does display the correct queue position  
+Fixed the search command so it starts the player if the queue is empty  
+The restart command now only restarts the discord message client as I don't find the command useful anymore  
+The sponsorblock UUId check was moved to settings.js  
+Moved the voiceStateUpdate event to queueWorker.js as it is easier than to communicate with the worker unnecessarily  
+
 # Version 0.5.0
 Added auto skipping of music off-topic segments using SponsorBlock data licensed used under CC BY-NC-SA 4.0 from https://sponsor.ajay.app/.  
 Added support for cookies  

@@ -15,7 +15,7 @@ module.exports = new Command({
 	syntax: 'queue <page>',
 	description: 'Shows the current queue.',
 	async run(message, args, client) {
-		const guildQueue = queue.get(message.guild.id);
+		const guildQueue = await queue.get(message.guild.id);
         if (!guildQueue) return message.channel.send(`${warning} ${noMusic}`);
 
         if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);

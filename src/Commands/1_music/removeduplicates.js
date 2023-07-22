@@ -11,15 +11,14 @@ module.exports = new Command({
 	aliases: [ 'removedupes', 'dupes' ],
 	description: 'Removes all duplicates from the queue. Requires Manage Channels permission.',
 	async run(message, args, client) {
-		const guildQueue = queue.get(message.guild.id);
-        if (!guildQueue) return message.channel.send(`${warning} ${noMusic}`);
+		const guildQueue = await queue.get(message.guild.id);
+		if (!guildQueue) return message.channel.send(`${warning} ${noMusic}`);
 
-        if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
+		if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
 
-		// check if message author has admin permissions
 		if (!message.member.permissions.has(PermissionsBitField.Flags.ManageChannels) && message.author.id != ownerID) return message.channel.send(`${error} ${invalidPermissions}`);
 		
-		const removedSongs = queue.removeduplicates(message.guild.id);
+		const removedSongs = await queue.removeduplicates(message.guild.id);
 
 		message.channel.send(`${success} ${removedSongs} entries have been removed from the queue.`);
 	}

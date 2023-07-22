@@ -30,9 +30,10 @@ class Client extends Discord.Client {
 
     start() {
 		initLog();
-		checkSettingsFiles();
 
 		consoleLog(`\nThis application comes from a GitHub project ${homepage.substring(19, homepage.length - 7)} (${homepage}).\nThe use is possible for free while keeping the credits.\nMade by EnhancedMind\nVersion ${version}\n`);
+
+		checkSettingsFiles();
 
 		readdirSync('./src/Commands')
 			.forEach(dirs => {

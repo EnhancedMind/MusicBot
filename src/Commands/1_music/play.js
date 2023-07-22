@@ -33,11 +33,11 @@ module.exports = new Command({
         if (!message.member.voice.channel) return message.channel.send(`${warning} ${noChannel}`);
         if (message.member.voice.channel.id == message.guild.afkChannelId) return message.channel.send(`${warning} ${afkChannel}`);
 
-        const guildQueue = queue.get(message.guild.id);
+        let guildQueue = await queue.get(message.guild.id);
         if (guildQueue && guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
 
         if (guildQueue && guildQueue.player.state.status == 'paused' && !args[0]) {
-            guildQueue.player.unpause();
+            queue.pause(message.guild.id, true);
             message.channel.send(`${success} Resumed **${guildQueue.songs[0].title}**.`);
             return;
         }
@@ -49,7 +49,7 @@ module.exports = new Command({
         if ( [ 'top', 't', 'next', 'now', 'n' ].includes(args[0].toLowerCase()) ) position = args.shift();
 
         if (!guildQueue) {
-            queue.construct(message, songs.slice());   //slice() to copy the array instead of passing the reference
+            queue.construct(message, songs);
         }
 
         const finder = (keywords, requester2Id, ignoreAttList = false) => {
@@ -257,15 +257,15 @@ module.exports = new Command({
                 songs.forEach(element => {
                     queue.push(message.guild.id, element);
                 });
-                if (shuffle) queue.shuffle(message.guild.id, guildQueue.songs.length - songs.length);  //guildQueue.songs.length is reference so the length is including the newly pushed songs
+                if (shuffle) queue.shuffle(message.guild.id, guildQueue.songs.length);
             }
 
             if (songs.length == 1 && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added **${songs[0].title}** (\`${songs[0].length}\`) ${[ 'now', 'n' ].includes(position) || guildQueue.songs.length == 1 ? `to begin playing` : `to the queue at position ${position ? '1' : guildQueue.songs.length - 1}` } `);
             else if (response.editable && !dontEdit && (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(`${success} Added ${shuffle ? 'and shuffled ' : ''}**${songs.length}** tracks!`);
 
-            if (guildQueue.player.state.status == 'idle') {
+            if ( (await queue.get(message.guild.id)).player.state.status == 'idle') {
                 await new Promise(resolve => setTimeout(resolve, 100));
-                if (guildQueue.player.state.status == 'idle') queue.player(message.guild.id);
+                if ( (await queue.get(message.guild.id)).player.state.status == 'idle') queue.player(message.guild.id);
             }
 
             else if ( [ 'now', 'n' ].includes(position) ) queue.skip(message.guild.id);

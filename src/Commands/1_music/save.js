@@ -10,7 +10,7 @@ module.exports = new Command({
 	aliases: [ 'grab', 'yoink' ],
 	description: 'Sends the currently playing song to your DMs.',
 	async run(message, args, client) {
-		const guildQueue = queue.get(message.guild.id);
+		const guildQueue = await queue.get(message.guild.id);
         if (!guildQueue) return message.channel.send(`${warning} ${noMusic}`);
 
 		try {

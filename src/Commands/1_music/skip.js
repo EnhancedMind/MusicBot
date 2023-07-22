@@ -10,7 +10,7 @@ module.exports = new Command({
 	syntax: 'skip <opt \'to\' position>',
 	description: 'Skips the current song or to a song.',
 	async run(message, args, client) {
-		const guildQueue = queue.get(message.guild.id);
+		const guildQueue = await queue.get(message.guild.id);
         if (!guildQueue) return message.channel.send(`${warning} ${noMusic}`);
 
         if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);
@@ -18,7 +18,6 @@ module.exports = new Command({
 		if ( [ 'to', 't' ].includes(args[0] ? args[0].toLowerCase() : args[0]) ) {
 			if (isNaN(args[1])) return message.channel.send(`${warning} ${invalidNumber}`);
 
-			// if args[1] is less than 1 or more than queue length - 1 return message
 			if (args[1] < 1 || args[1] > guildQueue.songs.length - 1) return message.channel.send(`${success} Please enter a number between 1 and ${guildQueue.songs.length - 1}`);
 
 			const { title, requester, requester2 } = guildQueue.songs[args[1]];

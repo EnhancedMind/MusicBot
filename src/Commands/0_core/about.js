@@ -11,7 +11,7 @@ module.exports = new Command({
 	aliases: [ ' ' ],
 	description: 'Shows information about the bot.',
 	async run(message, args, client) {
-		const queues = queue.get();
+		const queues = await queue.get();
 
 		const embed = new EmbedBuilder()
 			.setColor(0x3399FF)

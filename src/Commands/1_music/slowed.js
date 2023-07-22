@@ -13,7 +13,7 @@ module.exports = new Command({
 	syntax: 'slowed <speed>',
 	description: 'Plays the current song in slowed mode from the current time. Speed is optional and defaults to 0.85x.',
 	async run(message, args, client) {
-		const guildQueue = queue.get(message.guild.id);
+		const guildQueue = await queue.get(message.guild.id);
         if (!guildQueue) return message.channel.send(`${warning} ${noMusic}`);
 
         if (!message.member.voice.channel || guildQueue.connection.joinConfig.channelId != message.member.voice.channel.id) return message.channel.send(`${warning} ${wrongChannel}`);

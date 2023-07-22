@@ -1,6 +1,6 @@
 const Command = require('../../Structures/Command');
 
-const geniusLib = require("genius-lyrics");
+const geniusLib = require('genius-lyrics');
 const genius = new geniusLib.Client();
 
 const { EmbedBuilder } = require('discord.js');
@@ -17,7 +17,7 @@ module.exports = new Command({
     syntax: 'lyrics <opt query>',
 	description: 'Searches for lyrics on Genius based on the currently playing song (video) title or a passed query.',
 	async run(message, args, client) {
-		const guildQueue = queue.get(message.guild.id);
+		const guildQueue = await queue.get(message.guild.id);
         if (!guildQueue && !args[0]) return message.channel.send(`${warning} ${noMusic}`);
 
         const response = await message.channel.send(`${loading} Fetching lyrics...`);
@@ -30,7 +30,7 @@ module.exports = new Command({
             } 
             else {
                 searches = await genius.songs.search(args.join(' '), { sanitizeQuery: true });
-                errResponse = `${error} Lyrics for \`${args.join(' ')}\` could not be found.`
+                errResponse = `${error} Lyrics for \`${args.join(' ')}\` couldn't be found.`
             }
             if (!searches.length) {
                 if ( (await response.channel.messages.fetch({ limit: 1, cache: false, around: response.id })).has(response.id) ) response.edit(errResponse);
